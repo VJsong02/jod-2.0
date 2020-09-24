@@ -1,0 +1,1 @@
+print("we're gonna be poor as fuck")
