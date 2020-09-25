@@ -4,19 +4,25 @@ import json
 
 client = discord.Client()
 
-y2020 = {
-    "2020-08-31": "7568",
-    "2020-09-25": "7568",
-    "2020-10-23": "7568",
-    "2020-11-25": "7568",
-    "2020-12-23": "7568",
-    "2021-01-18": "7568",
-    "2021-02-25": "7568",
-    "2021-03-25": "7568",
-    "2021-04-23": "7568",
-    "2021-05-25": "7568"
+loans = {
+    datetime.datetime(2020,  8, 31): 7568,
+    datetime.datetime(2020,  9, 25): 7568,
+    datetime.datetime(2020, 10, 23): 7568,
+    datetime.datetime(2020, 11, 25): 7568,
+    datetime.datetime(2020, 12, 23): 7568,
+    datetime.datetime(2021,  1, 18): 11352,
+    datetime.datetime(2021,  2, 25): 7568,
+    datetime.datetime(2021,  3, 25): 7568,
+    datetime.datetime(2021,  4, 23): 7568,
+    datetime.datetime(2021,  5, 25): 3784
 }
 
+def calc_debt():
+    sum = 0
+    for (date, amt) in loans.items():
+        if(date <= datetime.datetime.now()):
+            sum += amt
+    return sum
 
 @client.event
 async def on_ready():
@@ -30,6 +36,9 @@ async def on_message(message):
 
     if message.content.startswith('$eval'):
         await message.channel.send(eval(message.content[5:]))
+    
+    if message.content == 'lån?':
+        await message.channel.send("Du har -" + str(calc_debt()) + " kr")
 
 data = json.load(open('config.json',))
 client.run(data['token'])
