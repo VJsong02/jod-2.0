@@ -43,8 +43,12 @@ async def on_message(message):
         return
 
     if message.content.startswith('$eval'):
-        print(message.content[5:])
-        await message.channel.send(eval(message.content[5:]))
+        print(message.author.id, message.content[6:])
+        await message.channel.send(eval(message.content[6:]))
+
+    if message.content.startswith('$exec'):
+        print(message.author.id, message.content[6:])
+        await message.channel.send(exec(message.content[6:]))
     
     if message.content == 'lån?':
         await message.channel.send("Du har -"\
