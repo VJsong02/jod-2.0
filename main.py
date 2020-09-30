@@ -68,6 +68,12 @@ async def send_embed(embed, client=client, channel=embedchannel):
 
 @client.event
 async def on_ready():
+    await client.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.watching,
+            name="dina lån"
+        )
+    )
     print('Logged in as {0.user}'.format(client))
 
 
@@ -78,14 +84,6 @@ async def on_message(message):
 
     if message.content == 'lån?':
         await message.channel.send(embed=gen_embed())
-
-    if message.content == "$setpresence":
-        await client.change_presence(
-            activity=discord.Activity(
-                type=discord.ActivityType.watching,
-                name="dina lån"
-            )
-        )
 
     if message.content.startswith("$eval"):
         try:
