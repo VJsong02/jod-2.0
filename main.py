@@ -28,8 +28,8 @@ def calc_debt(now=datetime.datetime.now(), interest=interests):
     sum = 0
     for (date, amt) in loans.items():
         if(date <= now):
-            sum += amt
             sum *= (interest[now.year] ** (1 / 12))
+            sum += amt
     return sum
 
 @client.event
