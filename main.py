@@ -10,7 +10,7 @@ import traceback
 import random
 
 client = commands.Bot("$")
-main_channel = client.get_channel(758774618546503700)
+main_channel = None
 
 payments = {
     datetime.date(2020,  8, 31): (7568,  3292),
@@ -74,6 +74,8 @@ async def send_embed(embed, client=client, channel=main_channel):
 
 @client.event
 async def on_ready():
+    global main_channel
+    main_channel = client.get_channel(758774618546503700)
     await client.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching,
@@ -81,6 +83,7 @@ async def on_ready():
         )
     )
     print('Logged in as {0.user}'.format(client))
+    timer.start()
 
 
 @client.event
@@ -107,10 +110,6 @@ async def timer():
     if day in payments and now.minute == 0 and now.hour == 0:
         await main_channel.send(embed=gen_embed())
 
-    #test
-    if now.minute == 0 and now.hour == 0:
-        await main_channel.send(embed=gen_embed())
 
-timer.start()
 data = json.load(open('config.json',))
 client.run(data['token'])
