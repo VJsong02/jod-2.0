@@ -7,62 +7,68 @@ import os
 import threading
 import time
 import traceback
+import random
 
 client = commands.Bot("$")
-embedchannel = 758774618546503700
+main_channel = client.get_channel(758774618546503700)
 
-dates = {
-    datetime.date(2020,  8, 31): 7568,
-    datetime.date(2020,  9, 25): 7568,
-    datetime.date(2020, 10, 23): 7568,
-    datetime.date(2020, 11, 25): 7568,
-    datetime.date(2020, 12, 23): 7568,
-    datetime.date(2021,  1, 18): 11352,
-    datetime.date(2021,  2, 25): 7568,
-    datetime.date(2021,  3, 25): 7568,
-    datetime.date(2021,  4, 23): 7568,
-    datetime.date(2021,  5, 25): 3784,
-    datetime.date(2021,  6, 25): 0,
-    datetime.date(2021,  7, 25): 0
+payments = {
+    datetime.date(2020,  8, 31): (7568,  3292),
+    datetime.date(2020,  9, 25): (7568,  3292 - 150), #150 kr uppläggningsavgift
+    datetime.date(2020, 10, 23): (7568,  3292),
+    datetime.date(2020, 11, 25): (7568,  3292),
+    datetime.date(2020, 12, 23): (7568,  3292),
+    datetime.date(2021,  1, 18): (11352, 4938 - 150), #uppläggningsavgift
+    datetime.date(2021,  2, 25): (7568,  3292),
+    datetime.date(2021,  3, 25): (7568,  3292),
+    datetime.date(2021,  4, 23): (7568,  3292),
+    datetime.date(2021,  5, 25): (3784,  1646),
+    datetime.date(2021,  6, 25): (0,     0),
+    datetime.date(2021,  7, 25): (0,     0)
 }
 
 interests = {
     2020: 1.0016,
-    2021: 1.0016
+    2021: 1.0016  # (?)
 }
 
 
-def calc_payments(now=datetime.date.today()):
-    sum = 0
-    for (date, amt) in dates.items():
+def calc_debt(now=datetime.date.today()):
+    loaned = 0
+    owe = 0
+    granted = 0
+    for (date, (loan, grant)) in payments.items():
         if(date <= now):
-            if amt > 0:
-                sum += amt + 3292
-    return sum
-
-
-def calc_debt(now=datetime.date.today(), interest=interests):
-    sum = 0
-    for (date, amt) in dates.items():
-        if(date <= now):
-            sum *= (interest[now.year] ** (1 / 12))
-            sum += amt
-    return sum
+            owe *= (interests[now.year] ** (1 / 12))
+            owe += loan
+            loaned += loan
+            granted += grant
+    return (loaned, owe, granted)
 
 
 def gen_embed():
+    loaned, owe, granted = calc_debt()
+
     embed = discord.Embed(
-        title="CSN",
-        colour=discord.Colour.orange()
+        title="CSN informerar",
+        colour=discord.Colour.from_rgb(60, 34, 92)
     )
-    embed.add_field(name="Utbetalat", value=str(calc_payments()) +
-                    str(" kr"), inline=False)
-    embed.add_field(name="Skuld", value=str(round(
-        calc_debt(), 2)) + str(" kr"), inline=False)
+    embed.add_field(name="Utbetalat", value=str(loaned + granted) + " kr", inline=False)
+    embed.add_field(name="Skuld", value=str(round(owe, 2)) + " kr (varav " + str(round(owe-loaned, 2)) + " kr ränta)", inline=False)
+    
+    motivational_texts = [
+        "Nu känner du dig inte lika rik längre va!?",
+        "Ränta-på-ränta is coming for you!",
+        "Hjälp med skuldsanering kostar bara 995 kr / timme.",
+        "Inte långt till personlig konkurs grabben!",
+        "Ett omöjligt fall för kronofogden...",
+        "Nu får du faktiskt börja jobba din lata drulle! /Johan Grudemo"
+    ]
+    embed.add_field(name="Motiverande text", value=random.choice(motivational_texts), inline=False)
     return embed
 
 
-async def send_embed(embed, client=client, channel=embedchannel):
+async def send_embed(embed, client=client, channel=main_channel):
     await client.get_channel(channel).send(embed)
 
 
@@ -98,9 +104,12 @@ async def timer():
     await client.wait_until_ready()
     day = datetime.date.today()
     now = datetime.datetime.now()
-    if day in dates and now.minute == 0 and now.hour == 0:
-        print("Sent embed at", now)
-        await client.get_channel(embedchannel).send(embed=gen_embed())
+    if day in payments and now.minute == 0 and now.hour == 0:
+        await main_channel.send(embed=gen_embed())
+
+    #test
+    if now.minute == 0 and now.hour == 0:
+        await main_channel.send(embed=gen_embed())
 
 timer.start()
 data = json.load(open('config.json',))
