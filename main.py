@@ -75,7 +75,7 @@ async def send_embed(embed, client=client, channel=main_channel):
 @client.event
 async def on_ready():
     global main_channel
-    main_channel = client.get_channel(758774618546503700)
+    main_channel = client.get_channel(748580468550533232)
     await client.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching,
