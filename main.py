@@ -1,4 +1,5 @@
-import datetime
+from datetime import date
+from datetime import datetime
 import discord
 from discord.ext import tasks, commands
 from itertools import cycle
@@ -13,18 +14,18 @@ client = commands.Bot("$")
 main_channel = None
 
 payments = {
-    datetime.date(2020,  8, 31): (7568,  3292),
-    datetime.date(2020,  9, 25): (7568,  3292 - 150), #150 kr uppläggningsavgift
-    datetime.date(2020, 10, 23): (7568,  3292),
-    datetime.date(2020, 11, 25): (7568,  3292),
-    datetime.date(2020, 12, 23): (7568,  3292),
-    datetime.date(2021,  1, 18): (11352, 4938 - 150), #uppläggningsavgift
-    datetime.date(2021,  2, 25): (7568,  3292),
-    datetime.date(2021,  3, 25): (7568,  3292),
-    datetime.date(2021,  4, 23): (7568,  3292),
-    datetime.date(2021,  5, 25): (3784,  1646),
-    datetime.date(2021,  6, 25): (0,     0),
-    datetime.date(2021,  7, 25): (0,     0)
+    date(2020,  8, 31): (7568,  3292),
+    date(2020,  9, 25): (7568,  3292 - 150), #150 kr uppläggningsavgift
+    date(2020, 10, 23): (7568,  3292),
+    date(2020, 11, 25): (7568,  3292),
+    date(2020, 12, 23): (7568,  3292),
+    date(2021,  1, 18): (11352, 4938 - 150), #uppläggningsavgift
+    date(2021,  2, 25): (7568,  3292),
+    date(2021,  3, 25): (7568,  3292),
+    date(2021,  4, 23): (7568,  3292),
+    date(2021,  5, 25): (3784,  1646),
+    date(2021,  6, 25): (0,     0),
+    date(2021,  7, 25): (0,     0)
 }
 
 interests = {
@@ -33,7 +34,7 @@ interests = {
 }
 
 
-def calc_debt(now=datetime.date.today()):
+def calc_debt(now=date.today()):
     loaned = 0
     owe = 0
     granted = 0
@@ -55,6 +56,14 @@ def gen_embed():
     )
     embed.add_field(name="Utbetalat", value=str(loaned + granted) + " kr", inline=False)
     embed.add_field(name="Skuld", value=str(round(owe, 2)) + " kr (varav " + str(round(owe-loaned, 2)) + " kr ränta)", inline=False)
+    for date in payments:
+        if(date > date.today()):
+            dt = datetime.combine(date, datetime.min.time()) - datetime.now()
+            s = f"{dt.seconds//3600:02d}:{dt.seconds//60%60:02d}:{dt.seconds%60:02d}"
+            if(dt.days == 1): s = "en dag och " + s
+            elif(dt.days > 1): s = f"{dt.days} dagar och " + s
+            embed.add_field(name="Nästa utbetalning", value=str(date) + " (om " + s + ")")
+            break
     
     motivational_texts = [
         "Nu känner du dig inte lika rik längre va!?",
@@ -105,8 +114,8 @@ async def on_message(message):
 @tasks.loop(minutes=1)
 async def timer():
     await client.wait_until_ready()
-    day = datetime.date.today()
-    now = datetime.datetime.now()
+    day = date.today()
+    now = datetime.now()
     if day in payments and now.minute == 0 and now.hour == 0:
         await main_channel.send(embed=gen_embed())
 
