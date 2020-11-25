@@ -34,7 +34,8 @@ interests = {
 }
 
 
-def calc_debt(now=date.today()):
+def calc_debt(now=None):
+    if(now == None): now = date.today()
     loaned = 0
     owe = 0
     granted = 0
@@ -71,7 +72,7 @@ def gen_embed():
         "Hjälp med skuldsanering kostar bara 995 kr / timme.",
         "Inte långt till personlig konkurs grabben!",
         "Ett omöjligt fall för kronofogden...",
-        "Nu får du faktiskt börja jobba din lata drulle! /Johan Grudemo"
+        "Du är en lat drulle! /Johan Grudemo"
     ]
     embed.add_field(name="Motiverande text", value=random.choice(motivational_texts), inline=False)
     return embed
