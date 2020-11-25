@@ -39,8 +39,8 @@ def calc_debt(now=None):
     loaned = 0
     owe = 0
     granted = 0
-    for (date, (loan, grant)) in payments.items():
-        if(date <= now):
+    for (day, (loan, grant)) in payments.items():
+        if(day <= now):
             owe *= (interests[now.year] ** (1 / 12))
             owe += loan
             loaned += loan
@@ -57,13 +57,13 @@ def gen_embed():
     )
     embed.add_field(name="Utbetalat", value=str(loaned + granted) + " kr", inline=False)
     embed.add_field(name="Skuld", value=str(round(owe, 2)) + " kr (varav " + str(round(owe-loaned, 2)) + " kr ränta)", inline=False)
-    for date in payments:
-        if(date > date.today()):
-            dt = datetime.combine(date, datetime.min.time()) - datetime.now()
+    for day in payments:
+        if(day > date.today()):
+            dt = datetime.combine(day, datetime.min.time()) - datetime.now()
             s = f"{dt.seconds//3600:02d}:{dt.seconds//60%60:02d}:{dt.seconds%60:02d}"
             if(dt.days == 1): s = "en dag och " + s
             elif(dt.days > 1): s = f"{dt.days} dagar och " + s
-            embed.add_field(name="Nästa utbetalning", value=str(date) + " (om " + s + ")")
+            embed.add_field(name="Nästa utbetalning", value=str(day) + " (om " + s + ")")
             break
     
     motivational_texts = [
