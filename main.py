@@ -1,14 +1,20 @@
-from datetime import date
-from datetime import datetime
-import discord
-from discord.ext import tasks, commands
-from itertools import cycle
+import io
 import json
 import os
+import random
 import threading
 import time
 import traceback
-import random
+import urllib
+from datetime import date, datetime
+from matplotlib import mathtext, font_manager
+from itertools import cycle
+
+import discord
+import requests
+from discord.ext import commands, tasks
+from matplotlib import mathtext, pyplot
+from PIL import Image
 
 client = commands.Bot("$")
 main_channel = None
@@ -110,7 +116,23 @@ async def on_message(message):
             await message.channel.send(eval(message.content[6:]))
         except Exception:
             await message.channel.send("```" + traceback.format_exc() + "```")
+            
+    if message.content.startswith("$wa"):
+        query = message.content[3:].strip()
+        url = "http://api.wolframalpha.com/v1/simple?appid={}&units=metric&i={}"\
+            .format(json.load(open('config.json',))['wolfram'],urllib.parse.quote(query))
+        await message.channel.send(file=discord.File(io.BytesIO(requests.get(url).content), "result.png"))
 
+    if message.content.startswith("$math"):
+        buffer = io.BytesIO()
+        properties = font_manager.FontProperties(size=24)
+        
+        mathtext.math_to_image("${}$".format(message.content[5:].strip()\
+            .replace("\n", "")).replace("`", ""),\
+            buffer, format="png", prop=properties)
+        buffer.seek(0)
+        
+        await message.channel.send(file=discord.File(buffer, "maths.png"))
 
 @tasks.loop(minutes=1)
 async def timer():
@@ -119,7 +141,6 @@ async def timer():
     now = datetime.now()
     if day in payments and now.minute == 0 and now.hour == 0:
         await main_channel.send(embed=gen_embed())
-
 
 data = json.load(open('config.json',))
 client.run(data['token'])
