@@ -128,8 +128,8 @@ async def on_message(message):
         properties = font_manager.FontProperties(size=24)
         
         mathtext.math_to_image("${}$".format(message.content[5:].strip()\
-            .replace("\n", "")).replace("`", ""),\
-            buffer, format="png", prop=properties)
+            .replace("\n", "")).replace("`", ""), buffer, format="png",\
+                prop=properties, dpi=384)
         buffer.seek(0)
         
         await message.channel.send(file=discord.File(buffer, "maths.png"))
