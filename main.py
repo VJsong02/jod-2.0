@@ -119,25 +119,18 @@ async def on_message(message):
     if message.content == 'lån?':
         await message.channel.send(embed=gen_embed())
 
-    if message.content.startswith("$eval"):
-        try:
-            print(message.author.id, message.content[6:])
-            await message.channel.send(eval(message.content[6:]))
-        except Exception:
-            await message.channel.send("```" + traceback.format_exc() + "```")
-
     if message.content.startswith("$wa"):
         query = message.content[3:].strip()
         url = "http://api.wolframalpha.com/v1/simple?appid={}&units=metric&i={}"\
             .format(json.load(open('config.json',))['wolfram'], urllib.parse.quote(query))
         await message.channel.send(file=discord.File(io.BytesIO(requests.get(url).content), "result.png"))
 
-    if message.content.startswith("?math"):
+    if message.content.startswith("$math"):
         buffer = io.BytesIO()
         properties = font_manager.FontProperties(size=36)
 
-        mathtext.math_to_image(r"${}$".format(message.content[5:].strip()
-            .replace("\n", "")).replace("`", ""), buffer, format="png",
+        mathtext.math_to_image("${}$".format(message.content[5:].strip()
+            .replace("\n", "").replace("`", "")), buffer, format="png",
             prop=properties, dpi=96)
         buffer.seek(0)
         im = Image.open(buffer)
