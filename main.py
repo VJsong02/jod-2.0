@@ -50,7 +50,7 @@ def calc_debt(now=None):
     granted = 0
     for (day, (loan, grant)) in payments.items():
         if(day <= now):
-            owe *= (interests[now.year] ** (1 / 12))
+            owe *= (interests[day.year] ** (1 / 12))
             owe += loan
             loaned += loan
             granted += grant
