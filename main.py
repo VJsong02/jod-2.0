@@ -48,12 +48,19 @@ def calc_debt(now=None):
     loaned = 0
     owe = 0
     granted = 0
+    prevday = None
     for (day, (loan, grant)) in payments.items():
         if(day <= now):
-            owe *= (interests[day.year] ** (1 / 12))
+            if(prevday):
+                if(prevday.year == day.year):
+                    owe *= (interests[day.year] ** ((day-prevday).days / 365))
+                else:
+                    newyear = date(day.year-1, 12, 31)
+                    owe *= (interests[day.year] ** ((day-newyear).days / 365)) * (interests[prevday.year] ** ((newyear-prevday).days / 365))
             owe += loan
             loaned += loan
             granted += grant
+        prevday = day
     return (loaned, owe, granted)
 
 
