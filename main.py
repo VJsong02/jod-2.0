@@ -60,7 +60,7 @@ def calc_debt(now=None):
     owe = 0
     granted = 0
     prevday = None
-    for (day, (loan, grant)) in payments.items():
+    for (day, (loan, grant)) in list(payments.items())+[(now, (0, 0))]:
         if(day <= now):
             if(prevday):
                 if(prevday.year == day.year):
@@ -71,7 +71,7 @@ def calc_debt(now=None):
             owe += loan
             loaned += loan
             granted += grant
-        prevday = day
+            prevday = day
     return (loaned, owe, granted)
 
 
