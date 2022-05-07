@@ -136,7 +136,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content == 'lån??':
+    if message.content == 'lån?':
         await message.channel.send(embed=gen_embed())
 
     if message.content.startswith("$wa"):
