@@ -111,6 +111,9 @@ def gen_embed():
                             value=str(sum(payments[day])) + " kr\n" 
                                 + str(day) + " (om " + s + ")")
             break
+    else:
+        embed.add_field(name="Nästa utbetalning",
+                        value="Ingen :pensive:")
 
     motivational_texts = [
         "Nu känner du dig inte lika rik längre va!?",
