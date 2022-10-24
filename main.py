@@ -2,24 +2,20 @@ import io
 import json
 import matplotlib
 import numpy as np
-import os
 import random
-import threading
-import time
-import traceback
 import urllib
 from datetime import date, datetime
 from matplotlib import mathtext, font_manager
-from itertools import cycle
 
 import discord
 import requests
 from discord.ext import commands, tasks
-from matplotlib import mathtext, pyplot
+from matplotlib import mathtext
 from PIL import Image
 
 client = commands.Bot("$")
 main_channel = None
+COLOUR = discord.Colour.from_rgb(60, 34, 92)
 
 payments = { 
     # 2020 - 2021
@@ -65,6 +61,17 @@ interests = {
     2022: 1.0000
 }
 
+def get_quote():
+    motivational_texts = [
+        "Nu känner du dig inte lika rik längre va!?",
+        "Ränta-på-ränta is coming for you!",
+        "Hjälp med skuldsanering kostar bara 995 kr / timme.",
+        "Inte långt till personlig konkurs grabben!",
+        "Ett omöjligt fall för kronofogden...",
+        "Du är en lat drulle! /Johan Grudemo"
+    ]
+    return random.choice(motivational_texts)
+
 
 def calc_debt(now=None):
     if(now == None):
@@ -93,7 +100,7 @@ def gen_embed():
 
     embed = discord.Embed(
         title="CSN informerar",
-        colour=discord.Colour.from_rgb(60, 34, 92)
+        colour=COLOUR
     )
     embed.add_field(name="Utbetalat", value=str(
         loaned + granted) + " kr", inline=False)
@@ -115,16 +122,7 @@ def gen_embed():
         embed.add_field(name="Nästa utbetalning",
                         value="Ingen :pensive:")
 
-    motivational_texts = [
-        "Nu känner du dig inte lika rik längre va!?",
-        "Ränta-på-ränta is coming for you!",
-        "Hjälp med skuldsanering kostar bara 995 kr / timme.",
-        "Inte långt till personlig konkurs grabben!",
-        "Ett omöjligt fall för kronofogden...",
-        "Du är en lat drulle! /Johan Grudemo"
-    ]
-    embed.add_field(name="Motiverande text", value=random.choice(
-        motivational_texts), inline=False)
+    embed.add_field(name="Motiverande text", value=get_quote(), inline=False)
     return embed
 
 
@@ -153,6 +151,29 @@ async def on_message(message):
 
     if message.content == 'lån?':
         await message.channel.send(embed=gen_embed())
+
+    if message.content == 'utbetalningar?':
+        dates = list(filter(lambda l: l > date.today(), payments))
+        # print(dates)
+        embed = discord.Embed(
+            title="CSN informerar",
+            colour=COLOUR
+        )
+
+        t = ""
+        for k in dates:
+            dt = datetime.combine(k, datetime.min.time()) - datetime.today()
+            s = f"{dt.seconds//3600:02d}:{dt.seconds//60%60:02d}:{dt.seconds%60:02d}"
+            if(dt.days == 1):
+                s = "en dag och " + s
+            elif(dt.days > 1):
+                s = f"{dt.days} dagar och " + s
+            t += f"{str(k)}: {sum(payments[k])} kr (om {s})\n"
+
+        embed.add_field(name="Utbetalningar", value=t)
+        embed.add_field(name="Motiverande text", value=get_quote(), inline=False)
+
+        await message.channel.send(embed=embed)
 
     if message.content.startswith("$wa"):
         query = message.content[3:].strip()
