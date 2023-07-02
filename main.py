@@ -188,44 +188,6 @@ async def on_message(message):
 
         await message.channel.send(embed=embed)
 
-    if message.content.startswith("$wa"):
-        query = message.content[3:].strip()
-        url = "http://api.wolframalpha.com/v1/simple?appid={}&units=metric&i={}"\
-            .format(json.load(open('config.json',))['wolfram'], urllib.parse.quote(query))
-        await message.channel.send(file=discord.File(io.BytesIO(requests.get(url).content), "result.png"))
-
-    if message.content.startswith("$math"):
-        buffer = io.BytesIO()
-        properties = font_manager.FontProperties(size=36)
-
-        mathtext.math_to_image("${}$".format(message.content[5:].strip()
-            .replace("\n", "").replace("`", "")), buffer, format="png",
-            prop=properties, dpi=96)
-        buffer.seek(0)
-        im = Image.open(buffer)
-        image_data = np.asarray(im)
-        image_data_bw = image_data.max(axis=2)
-        non_empty_columns = np.where(image_data_bw.max(axis=0)>0)[0]
-        non_empty_rows = np.where(image_data_bw.max(axis=1)>0)[0]
-        cropBox = (min(non_empty_rows), max(non_empty_rows), min(non_empty_columns), max(non_empty_columns))
-        image_data_new = image_data[cropBox[0]:cropBox[1]+1, cropBox[2]:cropBox[3]+1 , :]
-        wx = 1
-        wc = 10
-        hx = 1
-        hc = 10
-        im = Image.fromarray(image_data_new)
-        new_size = (int(im.size[0] * wx + wc * 2),\
-            int(im.size[1] * hx + hc * 2))
-        img = Image.new("RGB", new_size, (255, 255, 255))
-        img.paste(im, ((new_size[0]-im.size[0])//2,
-                       (new_size[1]-im.size[1])//2))
-        
-        newbuffer = io.BytesIO()
-        img.save(newbuffer, format="PNG")
-        newbuffer.seek(0)
-
-        await message.channel.send(file=discord.File(newbuffer, "maths.png"))
-
 
 @tasks.loop(minutes=1)
 async def timer():
@@ -235,6 +197,5 @@ async def timer():
     if day in payments and now.minute == 0 and now.hour == 0:
         await main_channel.send(embed=gen_embed())
 
-matplotlib.rcParams['mathtext.fontset'] = 'cm'
 data = json.load(open('config.json',))
 client.run(data['token'])
